@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
@@ -8,22 +9,33 @@ public class Player : MonoBehaviour
     public float speed;
 
     Rigidbody2D rigid;
+    SpriteRenderer spriter;
+    Animator anim;
 
-    void Start()
+    void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
-    }
-
-    void Update()
-    {
-        // GetAxis는 입력에 보정이 들어가 끝이 밀린다.
-        inputVec.x = Input.GetAxisRaw("Horizontal");
-        inputVec.y = Input.GetAxisRaw("Vertical");
+        spriter = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>();
     }
 
     void FixedUpdate()
     {
-        Vector2 nextVec = inputVec.normalized * speed * Time.fixedDeltaTime;
+        Vector2 nextVec = inputVec * speed * Time.fixedDeltaTime;
         rigid.MovePosition(rigid.position + nextVec);
+    }
+
+    void OnMove(InputValue value)
+    {
+        inputVec = value.Get<Vector2>();
+    }
+
+    void LateUpdate()
+    {
+        anim.SetFloat("Speed", inputVec.magnitude); // 벡터의 순수한 크기 값
+
+        if (inputVec.x != 0) {
+            spriter.flipX = inputVec.x < 0;
+        }
     }
 }
